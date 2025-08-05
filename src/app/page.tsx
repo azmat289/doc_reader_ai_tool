@@ -49,10 +49,39 @@ export default function Home() {
     try {
       // This is where you would call your search API
       // For now, just simulate a response
-      const result = await axios.post("/api/chat", {
-        message: searchQuery,
+      const response = await fetch("/api/chat", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ message: searchQuery }),
       });
-      setSearchResults(result?.data?.message);
+
+      if (!response.body) return;
+
+      const reader = response.body.getReader();
+      const decoder = new TextDecoder();
+      let streamedResults = "";
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+
+        const chunk = decoder.decode(value);
+        const lines = chunk.split('\n');
+        
+        for (const line of lines) {
+          if (line.startsWith('data: ')) {
+            try {
+              const data = JSON.parse(line.slice(6));
+              streamedResults += data.content;
+              setSearchResults(streamedResults);
+            } catch (e) {
+              // Skip invalid JSON
+            }
+          }
+        }
+      }
     } catch (error) {
       setSearchResults("Error occurred during search");
     } finally {

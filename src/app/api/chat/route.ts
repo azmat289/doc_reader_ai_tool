@@ -26,16 +26,25 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const { answer } = await docReader(message);
+    const { stream } = await docReader(message);
 
-    // TODO: Implement actual chat logic here
-    const chatResponse = {
-      id: `chat_${Date.now()}`,
-      message: answer,
-      timestamp: new Date().toISOString(),
-    };
+    const encoder = new TextEncoder();
+    const readableStream = new ReadableStream({
+      async start(controller) {
+        for await (const chunk of stream) {
+          const text = chunk.content || '';
+          controller.enqueue(encoder.encode(`data: ${JSON.stringify({ content: text })}\n\n`));
+        }
+        controller.close();
+      },
+    });
 
-    return NextResponse.json(chatResponse);
+    return new Response(readableStream, {
+      headers: {
+        'Content-Type': 'text/plain; charset=utf-8',
+        'Transfer-Encoding': 'chunked',
+      },
+    });
   } catch (error) {
     console.error(JSON.stringify(error));
     return NextResponse.json(
@@ -45,7 +54,7 @@ export async function POST(request: NextRequest) {
   }
 }
 
-const docReader = async (userMessage: string) => {
+const docReader = async (query: string) => {
   let loader;
   // 1. Load the document
   try {
@@ -65,40 +74,20 @@ const docReader = async (userMessage: string) => {
 
   const rawDocs = await loader.load();
 
-  // 2. Split documents into chunks
   const textSplitter = new RecursiveCharacterTextSplitter({
     chunkSize: 1000,
     chunkOverlap: 200,
   });
   const docs = await textSplitter.splitDocuments(rawDocs);
 
-  // 3. Create embeddings and vector store
   const embeddings = new OpenAIEmbeddings();
   const vectorStore = await MemoryVectorStore.fromDocuments(docs, embeddings);
-
-  // 4. Create a retrieval chain and execute query
-  const query = userMessage || "Weather and its Elements";
-
-  // Debug: Check total documents
-  console.log("Total document chunks:", docs.length);
-  console.log("Sample chunk:", docs[0]?.pageContent?.substring(0, 200));
 
   // Get more relevant documents with scores
   const searchOut = await vectorStore.similaritySearchWithScore(query, 4);
 
-  console.log(
-    "Search results with scores:",
-    searchOut.map(([doc, score]) => ({
-      score,
-      content: doc.pageContent.substring(0, 100),
-    }))
-  );
-
-  // 5. Use retrieved documents as context for LLM
+  // Use retrieved documents as context for LLM
   const context = searchOut.map(([doc, score]) => doc.pageContent).join("\n\n");
-
-  console.log("Context length:", context.length);
-  console.log("Context preview:", context.substring(0, 300));
 
   const messages = [
     new SystemMessage(
@@ -111,14 +100,10 @@ const docReader = async (userMessage: string) => {
     new HumanMessage(query),
   ];
 
-  const response = await model.invoke(messages);
-
-  console.log("LLM Response:", response.content);
+  const stream = await model.stream(messages);
 
   return {
-    // retrievedDocs: searchOut,
-    answer: response.content,
-    // context: context,
+    stream,
   };
 };
 
