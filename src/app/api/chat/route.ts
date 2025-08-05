@@ -48,9 +48,9 @@ const docReader = async (userMessage: string) => {
   let loader;
   // 1. Load the document
   try {
-    loader = new PDFLoader("docs/xyz.pdf"); // Or DocxLoader for .docx
+    loader = new PDFLoader("/tmp/xyz.pdf"); // Or DocxLoader for .docx
   } catch (err) {
-    loader = new DocxLoader("docs/xyz.docx");
+    loader = new DocxLoader("/tmp/xyz.docx");
   }
 
   const rawDocs = await loader.load();
