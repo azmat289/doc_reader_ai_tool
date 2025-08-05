@@ -36,7 +36,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json(chatResponse);
   } catch (error) {
-    console.log(error);
+    console.error(JSON.stringify(error));
     return NextResponse.json(
       { error: "Invalid request body" },
       { status: 400 }
@@ -50,6 +50,7 @@ const docReader = async (userMessage: string) => {
   try {
     loader = new PDFLoader("/tmp/xyz.pdf"); // Or DocxLoader for .docx
   } catch (err) {
+    console.error(JSON.stringify(err));
     loader = new DocxLoader("/tmp/xyz.docx");
   }
 
