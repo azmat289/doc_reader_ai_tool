@@ -6,6 +6,7 @@ import { MemoryVectorStore } from "langchain/vectorstores/memory";
 import { OpenAIEmbeddings } from "@langchain/openai";
 import { ChatAnthropic } from "@langchain/anthropic";
 import { DocxLoader } from "@langchain/community/document_loaders/fs/docx";
+import fetch from "node-fetch";
 
 const model = new ChatAnthropic({
   model: "claude-3-5-sonnet-20240620",
@@ -48,10 +49,18 @@ const docReader = async (userMessage: string) => {
   let loader;
   // 1. Load the document
   try {
-    loader = new PDFLoader("/tmp/xyz.pdf"); // Or DocxLoader for .docx
+    const res = await fetch(
+      "https://p2ms6irlxq6pgrwz.public.blob.vercel-storage.com/xyz.pdf"
+    );
+    const blob = <Blob>await res.blob();
+    loader = new PDFLoader(blob); // Or DocxLoader for .docx
   } catch (err) {
     console.error(JSON.stringify(err));
-    loader = new DocxLoader("/tmp/xyz.docx");
+    const res = await fetch(
+      "https://p2ms6irlxq6pgrwz.public.blob.vercel-storage.com/xyz.docx"
+    );
+    const blob = <Blob>await res.blob();
+    loader = new DocxLoader(blob);
   }
 
   const rawDocs = await loader.load();

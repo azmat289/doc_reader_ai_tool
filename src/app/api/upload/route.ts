@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { writeFile, mkdir } from "fs/promises";
 import { existsSync } from "fs";
 import path from "path";
+import { put } from "@vercel/blob";
+import { revalidatePath } from "next/cache";
 
 export async function POST(request: NextRequest) {
   try {
@@ -28,31 +30,38 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Create docs directory if it doesn't exist
-    // const docsDir = path.join(process.cwd(), "docs");
-    const docsDir = path.join("/tmp");
-    if (!existsSync(docsDir)) {
-      await mkdir(docsDir, { recursive: true });
-    }
+    // // Create docs directory if it doesn't exist
+    // // const docsDir = path.join(process.cwd(), "docs");
+    // const docsDir = path.join("/tmp");
+    // if (!existsSync(docsDir)) {
+    //   await mkdir(docsDir, { recursive: true });
+    // }
 
-    // Generate unique filename
-    const timestamp = Date.now();
+    // // Generate unique filename
+    // const timestamp = Date.now();
     const fileExtension = path.extname(file.name);
-    const fileName = `${timestamp}_${file.name.replace(
-      /[^a-zA-Z0-9.-]/g,
-      "_"
-    )}`;
-    const filePath = path.join(docsDir, `xyz${fileExtension}`);
+    // const fileName = `${timestamp}_${file.name.replace(
+    //   /[^a-zA-Z0-9.-]/g,
+    //   "_"
+    // )}`;
+    // const filePath = path.join(docsDir, `xyz${fileExtension}`);
 
-    // Convert file to buffer and save
-    const bytes = await file.arrayBuffer();
-    const buffer = Buffer.from(bytes);
-    await writeFile(filePath, buffer);
+    // // Convert file to buffer and save
+    // const bytes = await file.arrayBuffer();
+    // const buffer = Buffer.from(bytes);
+    // await writeFile(filePath, buffer);
+
+    await put(`xyz${fileExtension}`, file, {
+      access: "public",
+      addRandomSuffix: false,
+      allowOverwrite: true,
+    });
+    revalidatePath("/");
 
     const response = {
       success: true,
       message: "File uploaded successfully",
-      filename: fileName,
+      filename: `xyz${fileExtension}`,
       originalName: file.name,
       size: file.size,
       type: file.type,

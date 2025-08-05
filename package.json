@@ -13,6 +13,7 @@
     "@langchain/community": "^0.3.49",
     "@langchain/core": "^0.3.66",
     "@langchain/openai": "^0.6.3",
+    "@vercel/blob": "^1.1.1",
     "axios": "^1.11.0",
     "langchain": "^0.3.30",
     "next": "15.4.5",
