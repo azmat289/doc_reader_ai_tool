@@ -44,8 +44,8 @@ export async function POST(request: NextRequest) {
   }
 }
 
-const docReader = async (userMessage: any) => {
-  let loader: any;
+const docReader = async (userMessage: string) => {
+  let loader;
   // 1. Load the document
   try {
     loader = new PDFLoader("docs/xyz.pdf"); // Or DocxLoader for .docx
