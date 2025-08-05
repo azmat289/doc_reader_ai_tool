@@ -29,7 +29,8 @@ export async function POST(request: NextRequest) {
     }
 
     // Create docs directory if it doesn't exist
-    const docsDir = path.join(process.cwd(), "docs");
+    // const docsDir = path.join(process.cwd(), "docs");
+    const docsDir = path.join("/tmp");
     if (!existsSync(docsDir)) {
       await mkdir(docsDir, { recursive: true });
     }
