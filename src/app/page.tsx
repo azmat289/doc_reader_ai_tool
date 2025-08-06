@@ -92,9 +92,18 @@ export default function Home() {
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 p-8">
       <div className="max-w-4xl mx-auto">
-        <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-8 text-center">
-          Document Reader & Search Tool
-        </h1>
+        <div className="flex justify-between items-center mb-8">
+          <a
+            href="/resume/review"
+            className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 focus:ring-2 focus:ring-green-500 focus:ring-offset-2 transition-colors duration-200 font-medium"
+          >
+            Evaluate Resume
+          </a>
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-white flex-1 text-center">
+            Document Reader & Search Tool
+          </h1>
+          <div className="w-32"></div>
+        </div>
 
         {/* File Upload Section */}
         <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 mb-6">
