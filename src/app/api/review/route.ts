@@ -48,7 +48,7 @@ export async function POST(request: NextRequest) {
     try {
       if (fileExtension === ".pdf") {
         loader = new PDFLoader(file);
-      } else if (fileExtension === ".docx") {
+      } else if (fileExtension === ".docx" || fileExtension === ".doc") {
         loader = new DocxLoader(file);
       }
     } catch (err) {
